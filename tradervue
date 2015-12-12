@@ -1,0 +1,110 @@
+# vim: ft=python tabstop=2 shiftwidth=2 expandtab
+
+import clipboard
+import console
+import keychain
+import re
+import sys
+from datetime import datetime, date
+from tradervue import Tradervue
+
+KEYCHAIN_ID = 'tradervue'
+
+def get_args(argv):
+  args = { 'action': None,
+             'user': None, 
+             'text': clipboard.get(), 
+             'date': date.today().strftime('%Y-%m-%d'),
+        'overwrite': False }
+  for a in argv:
+    pairs = a.split(':')
+    for p in pairs:
+      (k, v) = p.split('=', 2)
+      if k not in args:
+        raise ValueError("Invalid argument '%s'" % (k))
+      args[k] = v
+
+  if args['action'] is None:
+    raise ValueError("No action specified")
+  if args['user'] is None:
+    args['user'] = console.input_alert("Tradervue Username")
+  if not re.match(r'^\d{4}-\d{2}-\d{2}', args['date']):
+    raise ValueError("Invalid date format '%s'. Must be YYYY-MM-DD" % (args['date']))
+
+  args['date'] = datetime.strptime(args['date'], '%Y-%m-%d')
+
+  return args
+
+def set_password(args, tv):
+  p = console.password_alert("Tradervue Credentials", args['user'])
+  keychain.set_password(KEYCHAIN_ID, args['user'], p)
+  return True
+
+def delete_password(args, tv):
+  if keychain.get_password(KEYCHAIN_ID, args['user']) is None:
+    LOG.error("No password was set for %s" % (args['user']))
+    return False
+  else:
+    keychain.delete_password(KEYCHAIN_ID, args['user'])
+    LOG.info("Deleted credentials for %s" % (args['user']))
+    return True
+
+def new_note(args, tv):
+  note_id = tv.create_note(args['text']))
+  if note_id is None:
+    LOG.error("Failed to create new note")
+    return False
+  else:
+    LOG.info("Created new note with ID %s" % (note_id))
+    return True
+
+def update_journal(args, tv):
+  datestring = args['date'].strftime('%Y-%m-%d')
+
+  # Check if we have an existing entry on the date. If not, just create it
+  # Otherwise overwrite it if args['overwrite'] is set or append to it if not
+  # 
+  journal = tv.get_journal(date = args['date'])
+  if journal is None:
+    journal_id = tv.create_journal(args['date'], args['text'])
+    if journal_id is None:
+      LOG.error("Failed to create journal on %s" % (datestring))
+      return False
+    else:
+      LOG.info("Created new journal on %s with ID %s" % (datestring, journal_id))
+      return True
+  else:
+    verb = 'Appended'
+    text = journal['notes']
+    if args['overwrite']:
+      verb = 'Overwrite'
+      text = ''
+    text += "\n%s" % (args['text'])
+
+    if tv.update_journal(journal['id'], args['text']):
+      LOG.info("%s journal on %s (ID %s)" % (verb, journal['id'], datestring))
+      return True
+    else:
+      LOG.error("Failed to update journal on %s (ID %s)" % (datestring, journal['id']))
+      return False
+
+def main():
+  args = get_args(sys.argv)
+
+  actions = { 'set_password': set_password,
+           'delete_password': delete_password,
+                  'new_note': new_note,
+            'update_journal': update_journal }
+
+  ok = False
+  if args['action'] is None:
+    raise ValueError("No action specified")
+  elif args['action'] not in actions:
+    raise ValueError("Invalid action '%s'" % (args['action'])
+  else:
+    ok = args[args['action']](args, tv)
+
+  return 0 if ok else 1
+
+if __name__ == "__main__":
+  sys.exit(main())
