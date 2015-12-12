@@ -24,7 +24,7 @@ This action deletes the credentials for the specified username. The `text` argum
 This action creates a new Tradervue [note](http://blog.tradervue.com/2014/05/01/saving-notes/). 
 
 #### `update_journal`
-This action creates a new Tradervue [note](http://blog.tradervue.com/2014/05/01/saving-notes/). 
+This action updates a Tradervue journal entry, creating it if necessary.
 
 ##### URL Args
 |arg|Default|Description|
