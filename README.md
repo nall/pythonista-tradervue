@@ -14,19 +14,19 @@ This script uses the iOS keychain to store Tradervue credentials. While **not** 
 |text | (clipboard contents) | The text to append to the journal entry|
 
 ## Actions
-### `update_passwd`
+#### `update_passwd`
 This action creates (or udpates an existing) Tradervue username/password combination in the keychain. The `text` argument is ignored. 
 
-### `delete_passwd`
+#### `delete_passwd`
 This action deletes the credentials for the specified username. The `text` argument is ignored. 
 
-### `new_note`
+#### `new_note`
 This action creates a new Tradervue [note](http://blog.tradervue.com/2014/05/01/saving-notes/). 
 
-### `update_journal`
+#### `update_journal`
 This action creates a new Tradervue [note](http://blog.tradervue.com/2014/05/01/saving-notes/). 
 
-#### URL Args
+##### URL Args
 |arg|Default|Description|
 |---|-------|-----------|
 |date | (today) | The date of the journal to modify in YYYY-MM-DD format. |
