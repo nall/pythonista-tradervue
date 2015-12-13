@@ -1,5 +1,5 @@
 # pythonista-tradervue
-Routines to interact with [Treadervue](https://www.tradervue.com) from [Pythonista](http://omz-software.com/pythonista).
+Routines to interact with [Tradervue](https://www.tradervue.com) from [Pythonista](http://omz-software.com/pythonista).
 
 ## Overview
 The script here takes a number of arguments to direct how it should behave (see below table). Some actions may support additional args and those are documented in the action's specific documentation. 
