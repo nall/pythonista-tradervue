@@ -36,17 +36,20 @@ import logging
 import re
 import sys
 from datetime import datetime, date
+
+sys.path.insert(0, os.path.realpath(os.join(os.getwd(), 'tradervue')))
 from tradervue import Tradervue, TradervueLogFormatter
 
 LOG = None
+DEBUG = 0 # 1 for normal debug, 2 for HTTP debug as well
 KEYCHAIN_ID = 'tradervue'
 USER_AGENT = "Pythonista Tradervue (jon.nall@gmail.com)"
 
 def get_args(argv):
-  args = { 'action': None,
+  args = { 'action': 'set_password',
              'user': None,
              'text': clipboard.get(),
-             'date': date.today().strftime('%Y-%m-%d'),
+             'date': date.today().strftime('%Y%m%d'),
         'overwrite': "0" }
   for a in argv:
     pairs = a.split(':')
@@ -56,19 +59,17 @@ def get_args(argv):
         raise ValueError("Invalid argument '%s'" % (k))
       args[k] = v
 
-  if args['action'] is None:
-    raise ValueError("No action specified")
   if args['user'] is None:
     args['user'] = console.input_alert("Tradervue Username")
-  if not re.match(r'^\d{4}-\d{2}-\d{2}', args['date']):
-    raise ValueError("Invalid date format '%s'. Must be YYYY-MM-DD" % (args['date']))
+  if not re.match(r'^\d{8}$', args['date']):
+    raise ValueError("Invalid date format '%s'. Must be YYYYMMDD" % (args['date']))
 
   if int(args['overwrite']) == 0:
     args['overwrite'] = False
   else:
     args['overwrite'] = True
 
-  args['date'] = datetime.strptime(args['date'], '%Y-%m-%d')
+  args['date'] = datetime.strptime(args['date'], '%Y%m%d')
 
   return args
 
@@ -129,7 +130,9 @@ def update_journal(args, tv):
 def main():
   global LOG
   LOG = logging.getLogger()
-  LOG.setLevel(logging.DEBUG)
+  LOG.setLevel(logging.INFO)
+  if DEBUG > 1:
+    LOG.setLevel(logging.DEBUG)
   c = logging.StreamHandler()
   c.setFormatter(TradervueLogFormatter())
   LOG.addHandler(c)
@@ -149,9 +152,10 @@ def main():
   else:
     p = keychain.get_password(KEYCHAIN_ID, args['user'])
     if p is None:
-      assert ValueError("No password found for %s. Use the set_password action to set one" % (args['user']))
+      # Request one from the user
+      p = console.password_alert("Tradervue Credentials", args['user'])
     else:
-      tv = Tradervue(args['user'], p, USER_AGENT)
+      tv = Tradervue(args['user'], p, USER_AGENT, verbose_http = True if DEBUG > 1 else False)
       ok = actions[args['action']](args, tv)
 
   return 0 if ok else 1
