@@ -33,11 +33,12 @@ import clipboard
 import console
 import keychain
 import logging
+import os
 import re
 import sys
 from datetime import datetime, date
 
-sys.path.insert(0, os.path.realpath(os.join(os.getwd(), 'tradervue')))
+sys.path.insert(0, os.path.realpath(os.path.join(os.getcwd(), 'tradervue')))
 from tradervue import Tradervue, TradervueLogFormatter
 
 LOG = None
