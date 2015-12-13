@@ -6,6 +6,8 @@ The script here takes a number of arguments to direct how it should behave (see 
 
 This script uses the iOS keychain to store Tradervue credentials. While **not** available to other iOS applications. They **are** available to other Pythonista scripts. You can add multiple sets of credentials.
 
+This script has been tested successfully in both [Drafts](http://agiletortoise.com/drafts/) and [Workflow](https://workflow.is).
+
 ### URL Args
 |arg|Default|Description|
 |---|-------|-----------|
